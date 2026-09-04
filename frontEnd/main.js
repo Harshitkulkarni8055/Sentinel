@@ -4,7 +4,7 @@
    =================================================================== */
 
 // ─── Global State ───────────────────────────────────────────────────
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = 'https://sentinel-prtp.onrender.com';
 let scanData = null;        // Latest scan response
 let scanHistory = [];       // History of scans
 let currentView = 'landing';
