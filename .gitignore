@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+venv311/
+.venv/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node
+node_modules/
+
+# Build/cache
+dist/
+build/
+.cache/
+
+# Recordings / large local files
+*.mp4
+*.mov
+*.avi
+
+# Local runtime files
+*.tmp
+*.temp
+
+# Local project documentation
+Sentinel Backend.docx
+sentinel_documentation.docx
+
+# Local recordings
+*.mp4
+*.mov
+*.avi

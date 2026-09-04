@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel — Autonomous Application Security</title>
+    <meta name="description" content="Sentinel autonomously discovers attack surfaces, performs dynamic security testing, authenticates, tests authorization boundaries, and produces validated security results using AI.">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- SVG Grading Filters -->
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+        <filter id="grade" color-interpolation-filters="sRGB">
+            <feColorMatrix type="matrix" values="
+                0.2  0    0    0 0
+                0    0.3  0    0 0
+                0    0    0.8  0 0
+                0    0    0    1 0" />
+            <feComponentTransfer><feFuncA type="linear" slope="0.9"/></feComponentTransfer>
+        </filter>
+    </svg>
+
+    <!-- Background Video -->
+    <div class="video-container">
+        <video class="bg-video graded" autoplay muted loop playsinline preload="auto">
+            <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260809_012548_ef22562c-c0ae-4816-ad9d-f8922af4e6a7.mp4" type="video/mp4" />
+        </video>
+    </div>
+
+    <!-- Unified Application Navigation -->
+    <nav class="app-nav" id="app-nav" aria-label="Sentinel application navigation">
+        <a class="nav-brand" href="#" onclick="navigateTo('overview'); return false;" aria-label="Sentinel overview">
+            <img src="assets/sentinel-logo.jpeg" alt="Sentinel logo">
+            <span>SENTINEL</span>
+        </a>
+        <div class="nav-links">
+            <a href="#" data-view="overview" onclick="navigateTo('overview'); return false;">Overview</a>
+            <a href="#" data-view="scan" onclick="navigateTo('scan'); return false;">Scan</a>
+            <a href="#" data-view="attack-surface" onclick="navigateTo('attack-surface'); return false;">Attack Surface</a>
+            <a href="#" data-view="findings" onclick="navigateTo('findings'); return false;">Findings</a>
+            <a href="#" data-view="attack-paths" onclick="navigateTo('attack-paths'); return false;">Attack Paths</a>
+            <a href="#" data-view="activity" onclick="navigateTo('activity'); return false;">Activity</a>
+            <a href="#" data-view="history" onclick="navigateTo('history'); return false;">History</a>
+            <a href="#" data-view="reports" onclick="navigateTo('reports'); return false;">Reports</a>
+        </div>
+        <div class="nav-user-actions"><button class="nav-profile hidden" id="nav-profile" onclick="openProfileModal()" aria-label="Open user profile"><i class="fa-regular fa-user"></i><span>Profile</span></button><button class="nav-account" id="nav-account" onclick="handleAccountAction()">Sign in</button></div>
+    </nav>
+
+    <!-- Mobile Burger -->
+    <button class="mobile-burger" id="mobile-burger" aria-label="Menu">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobile-menu">
+        <a href="#" onclick="navigateTo('overview'); closeMobileMenu(); return false;">Overview</a>
+        <a href="#" onclick="navigateTo('scan'); closeMobileMenu(); return false;">Scan</a>
+        <a href="#" onclick="navigateTo('attack-surface'); closeMobileMenu(); return false;">Attack Surface</a>
+        <a href="#" onclick="navigateTo('findings'); closeMobileMenu(); return false;">Findings</a>
+        <a href="#" onclick="navigateTo('attack-paths'); closeMobileMenu(); return false;">Attack Paths</a>
+        <a href="#" onclick="navigateTo('activity'); closeMobileMenu(); return false;">Activity</a>
+        <a href="#" onclick="navigateTo('history'); closeMobileMenu(); return false;">History</a>
+        <a href="#" onclick="navigateTo('reports'); closeMobileMenu(); return false;">Reports</a>
+        <button class="mobile-profile-btn hidden" id="mobile-profile-btn" onclick="openProfileModal(); closeMobileMenu();">Profile</button>
+    </nav>
+
+    <!-- Canvas -->
+    <div class="canvas">
+        <main class="main-workspace" id="main-workspace">
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: LANDING                               -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-landing" class="view active">
+                <header class="landing-header">
+                    <a class="brand-lockup" href="#" onclick="navigateTo('landing'); return false;" aria-label="Sentinel home">
+                        <img class="brand-logo" src="assets/sentinel-logo.jpeg" alt="Sentinel logo">
+                        <span class="brand-name">SENTINEL</span>
+                    </a>
+                    <nav class="landing-nav">
+                        <a href="#" onclick="navigateTo('landing'); return false;">Home</a>
+                        <a href="#sentinel-story" onclick="document.getElementById('sentinel-story').scrollIntoView({behavior:'smooth'}); return false;">Product</a>
+                        <a href="#sentinel-engine" onclick="document.getElementById('sentinel-engine').scrollIntoView({behavior:'smooth'}); return false;">How it works</a>
+                        <a href="#" onclick="openLegal('contact'); return false;">Contact</a>
+                    </nav>
+                    <button class="btn-signin" id="landing-signin" onclick="handleLandingAccountAction()">Sign in</button>
+                </header>
+
+                <div class="landing-content">
+                    <h1 class="dot-headline animate-in animate-in-delay-1">SECURITY<br>DESIGNED<br>TO EVOLVE</h1>
+                    <p class="hero-subcopy animate-in animate-in-delay-2">Autonomous application security that discovers, tests, authenticates, reasons, and validates — end to end.</p>
+                    <button class="cta-pill animate-in animate-in-delay-3" onclick="handleGetStarted()">GET STARTED <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <!-- Strix-inspired product story: same MotionSites visual language, focused on Sentinel's autonomous loop. -->
+                <section class="landing-story" id="sentinel-story">
+                    <div class="story-intro">
+                        <div class="story-kicker">ONE SECURITY LOOP</div>
+                        <h2>From attack surface<br>to proof.</h2>
+                        <p>Sentinel watches the live application, adapts its tests to what it discovers, and validates security impact before calling something a vulnerability.</p>
+                    </div>
+                    <div class="story-steps">
+                        <article><span>01</span><h3>DISCOVER</h3><p>Map pages, APIs, parameters, authentication paths and exposed functionality.</p></article>
+                        <article><span>02</span><h3>ADAPT</h3><p>Use runtime observations to choose the next security action instead of replaying a fixed checklist.</p></article>
+                        <article><span>03</span><h3>TEST</h3><p>Exercise authentication, sessions, object ownership and privilege boundaries with controlled requests.</p></article>
+                        <article><span>04</span><h3>PROVE</h3><p>Separate hypotheses from confirmed issues and attach evidence to every validated result.</p></article>
+                    </div>
+                </section>
+
+                <section class="landing-engine" id="sentinel-engine">
+                    <div class="engine-copy">
+                        <div class="story-kicker">THE SENTINEL ENGINE</div>
+                        <h2>It doesn't just scan.<br>It reasons.</h2>
+                        <p>Every response becomes context for the next move. Sentinel combines deterministic security tooling with an AI reasoning layer that prioritizes tests, forms hypotheses and validates findings.</p>
+                        <button class="story-link" onclick="handleGetStarted()">Run your first test <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                    <div class="engine-loop" aria-label="Sentinel security loop">
+                        <div class="loop-head"><span>LIVE SECURITY LOOP</span><b>● RUNNING</b></div>
+                        <div class="loop-row"><span>01&nbsp;&nbsp; RECON</span><em>map the surface</em></div>
+                        <div class="loop-row"><span>02&nbsp;&nbsp; HYPOTHESIS</span><em>choose next action</em></div>
+                        <div class="loop-row"><span>03&nbsp;&nbsp; AUTHZ</span><em>test ownership</em></div>
+                        <div class="loop-row"><span>04&nbsp;&nbsp; VALIDATE</span><em>require evidence</em></div>
+                        <div class="loop-result"><span>● CONFIRMED</span><strong>HIGH</strong></div>
+                    </div>
+                </section>
+
+                <section class="landing-continuous">
+                    <div><div class="story-kicker">BUILT FOR CONTINUOUS SECURITY</div><h2>Security that keeps<br>up with shipping.</h2></div>
+                    <p>Run on demand today. Re-test after changes tomorrow. Keep attack surface, findings, evidence and history connected as your application evolves.</p>
+                </section>
+
+                <footer class="landing-footer">
+                    <div class="stat-box animate-in animate-in-delay-2">
+                        <div class="stat-val"><span class="counter" data-target="142">0</span>ms</div>
+                        <div class="stat-lbl">Inference Time</div>
+                    </div>
+                    <div class="stat-box animate-in animate-in-delay-3">
+                        <div class="stat-val"><span class="counter" data-target="99.9">0</span>%</div>
+                        <div class="stat-lbl">Platform Uptime</div>
+                    </div>
+                    <div class="stat-box animate-in animate-in-delay-4">
+                        <div class="stat-val"><span class="counter" data-target="9">0</span></div>
+                        <div class="stat-lbl">Security Agents</div>
+                    </div>
+                    <div class="stat-box animate-in animate-in-delay-5">
+                        <div class="stat-val"><span class="counter" data-target="128">0</span>k</div>
+                        <div class="stat-lbl">Context Windows</div>
+                    </div>
+                </footer>
+
+                <footer class="legal-footer" id="legal-footer">
+                    <div class="legal-brand">© 2026 Sentinel Security</div>
+                    <div class="legal-links">
+                        <a href="#" onclick="openLegal('privacy'); return false;">Privacy Policy</a>
+                        <a href="#" onclick="openLegal('terms'); return false;">Terms & Conditions</a>
+                        <a href="#" onclick="openLegal('compliance'); return false;">Legal Compliance</a>
+                    </div>
+                </footer>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: OVERVIEW                              -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-overview" class="view app-view">
+                <div class="section-label animate-in">Sentinel</div>
+                <div class="section-title animate-in animate-in-delay-1">AUTONOMOUS<br>APPLICATION SECURITY</div>
+                <div class="section-subtitle animate-in animate-in-delay-2">Intelligence-driven security analysis for modern applications.</div>
+
+                <div class="overview-target animate-in animate-in-delay-2" id="overview-target" style="display:none;">
+                    <span class="target-label">Target</span>
+                    <span class="target-url" id="overview-target-url">—</span>
+                </div>
+
+                <div class="metrics-row" id="overview-metrics">
+                    <div class="metric-item animate-in animate-in-delay-2">
+                        <div class="metric-value" id="ov-findings">—</div>
+                        <div class="metric-label">Findings</div>
+                    </div>
+                    <div class="metric-item animate-in animate-in-delay-3">
+                        <div class="metric-value" id="ov-endpoints">—</div>
+                        <div class="metric-label">Endpoints</div>
+                    </div>
+                    <div class="metric-item animate-in animate-in-delay-3">
+                        <div class="metric-value" id="ov-requests">—</div>
+                        <div class="metric-label">Requests</div>
+                    </div>
+                    <div class="metric-item animate-in animate-in-delay-4">
+                        <div class="metric-value" id="ov-agents">09</div>
+                        <div class="metric-label">Agents</div>
+                    </div>
+                    <div class="metric-item score animate-in animate-in-delay-5">
+                        <div class="metric-value" id="ov-score">—</div>
+                        <div class="metric-label">Security Score</div>
+                    </div>
+                </div>
+
+                <button class="overview-cta animate-in animate-in-delay-4" onclick="navigateTo('scan')">Start Scan</button>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: NEW SCAN                              -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-scan" class="view app-view">
+                <div class="scan-center">
+                    <div class="section-label animate-in">Target Application</div>
+                    <div class="section-title animate-in animate-in-delay-1" style="text-align:center;">INVESTIGATE</div>
+
+                    <div class="scan-input-group animate-in animate-in-delay-2">
+                        <input type="url" class="scan-input" id="scan-target-input" placeholder="https://example.com" autocomplete="off" spellcheck="false">
+                    </div>
+
+                    <div class="scan-auth-toggle animate-in animate-in-delay-3" id="auth-toggle" onclick="toggleAuthFields()">
+                        <i class="fa-solid fa-chevron-down"></i>
+                        Authentication
+                    </div>
+
+                    <div class="scan-auth-fields" id="auth-fields">
+                        <div class="auth-field">
+                            <label>Method</label>
+                            <input type="text" id="auth-method" placeholder="Auto Detect" value="Auto Detect">
+                        </div>
+                        <div class="auth-field">
+                            <label>Username</label>
+                            <input type="text" id="auth-username" placeholder="username">
+                        </div>
+                        <div class="auth-field">
+                            <label>Password</label>
+                            <input type="password" id="scan-auth-password" placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <button class="btn-scan animate-in animate-in-delay-3" id="btn-start-scan" onclick="startScan()">Start Scan</button>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: LIVE SCAN                             -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-live-scan" class="view app-view">
+                <div class="live-scan-container">
+                    <div class="section-label animate-in">Sentinel</div>
+                    <div class="section-title animate-in animate-in-delay-1" style="text-align:center;">AUTONOMOUS<br>INVESTIGATION</div>
+
+                    <div class="scan-target-display animate-in animate-in-delay-2" id="live-scan-target">
+                        <span class="target-dot"></span>
+                        <span id="live-target-url">—</span>
+                    </div>
+
+                    <div class="pipeline-timeline" id="pipeline-timeline">
+                        <!-- Pipeline nodes injected by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: ATTACK SURFACE                        -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-attack-surface" class="view app-view">
+                <div class="section-label animate-in">Discovery</div>
+                <div class="section-title animate-in animate-in-delay-1">ATTACK SURFACE</div>
+                <div class="metrics-row animate-in animate-in-delay-2" style="margin-bottom:calc(36 * var(--s));">
+                    <div class="metric-item">
+                        <div class="metric-value" id="as-endpoint-count">—</div>
+                        <div class="metric-label">Endpoints</div>
+                    </div>
+                </div>
+                <div class="endpoint-list" id="endpoint-list">
+                    <div class="empty-state"><span class="empty-state-text">Run a scan to discover endpoints</span></div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: FINDINGS                              -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-findings" class="view app-view">
+                <div class="section-label animate-in">Verified Results</div>
+                <div class="section-title animate-in animate-in-delay-1">FINDINGS</div>
+                <div class="section-subtitle animate-in animate-in-delay-2" id="findings-summary"></div>
+                <div class="findings-list" id="findings-list">
+                    <div class="empty-state"><span class="empty-state-text">No findings yet</span></div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: FINDING DETAIL                        -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-finding-detail" class="view app-view">
+                <div class="finding-detail-view" id="finding-detail-content">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: ATTACK PATHS                          -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-attack-paths" class="view app-view">
+                <div class="section-label animate-in">Intelligence</div>
+                <div class="section-title animate-in animate-in-delay-1">ATTACK PATHS</div>
+                <div class="section-subtitle animate-in animate-in-delay-2">Validated exploitation chains discovered by Sentinel.</div>
+                <div class="attack-paths-container" id="attack-paths-container">
+                    <div class="empty-state"><span class="empty-state-text">No attack paths discovered yet</span></div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: ACTIVITY (Pipeline + Reasoning + DAST + Auth + Correlation) -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-activity" class="view app-view">
+                <div class="section-label animate-in">Intelligence Pipeline</div>
+                <div class="section-title animate-in animate-in-delay-1">ACTIVITY</div>
+
+                <!-- Sub-nav for activity sections -->
+                <div class="activity-tabs animate-in animate-in-delay-2" style="display:flex;gap:calc(4*var(--s));margin-bottom:calc(40*var(--s));flex-wrap:wrap;">
+                    <button class="activity-tab active" data-tab="tab-dast" onclick="switchActivityTab('tab-dast',this)">DAST</button>
+                    <button class="activity-tab" data-tab="tab-adaptive" onclick="switchActivityTab('tab-adaptive',this)">Adaptive</button>
+                    <button class="activity-tab" data-tab="tab-auth" onclick="switchActivityTab('tab-auth',this)">Auth</button>
+                    <button class="activity-tab" data-tab="tab-authz" onclick="switchActivityTab('tab-authz',this)">AuthZ</button>
+                    <button class="activity-tab" data-tab="tab-reasoning" onclick="switchActivityTab('tab-reasoning',this)">Reasoning</button>
+                    <button class="activity-tab" data-tab="tab-static" onclick="switchActivityTab('tab-static',this)">Static</button>
+                    <button class="activity-tab" data-tab="tab-ai-analyst" onclick="switchActivityTab('tab-ai-analyst',this)">AI Analyst</button>
+                    <button class="activity-tab" data-tab="tab-correlation" onclick="switchActivityTab('tab-correlation',this)">Correlation</button>
+                </div>
+
+                <!-- DAST -->
+                <div class="activity-panel active" id="tab-dast">
+                    <div class="section-label">Dynamic Security Testing</div>
+                    <div class="metrics-row" style="margin-bottom:calc(32*var(--s));">
+                        <div class="metric-item"><div class="metric-value" id="dast-requests">—</div><div class="metric-label">Requests</div></div>
+                        <div class="metric-item"><div class="metric-value" id="dast-endpoints">—</div><div class="metric-label">Endpoints</div></div>
+                        <div class="metric-item"><div class="metric-value" id="dast-tests">—</div><div class="metric-label">Tests</div></div>
+                        <div class="metric-item"><div class="metric-value" id="dast-potential">—</div><div class="metric-label">Potential Findings</div></div>
+                    </div>
+                    <div class="section-label" style="margin-top:calc(16*var(--s));">Test Categories</div>
+                    <div class="dast-categories" id="dast-categories">
+                        <div class="empty-state"><span class="empty-state-text">Awaiting scan data</span></div>
+                    </div>
+                </div>
+
+                <!-- Adaptive DAST -->
+                <div class="activity-panel" id="tab-adaptive">
+                    <div class="section-label">Adaptive Testing</div>
+                    <div class="metrics-row" style="margin-bottom:calc(32*var(--s));">
+                        <div class="metric-item"><div class="metric-value" id="adapt-endpoints">—</div><div class="metric-label">Endpoints Prioritized</div></div>
+                        <div class="metric-item"><div class="metric-value" id="adapt-probes">—</div><div class="metric-label">Targeted Probes</div></div>
+                        <div class="metric-item"><div class="metric-value" id="adapt-http">—</div><div class="metric-label">HTTP Probes</div></div>
+                    </div>
+                    <div class="section-label" style="margin-top:calc(16*var(--s));">Why These Endpoints?</div>
+                    <div id="adaptive-insights">
+                        <div class="empty-state"><span class="empty-state-text">Awaiting scan data</span></div>
+                    </div>
+                </div>
+
+                <!-- Auth -->
+                <div class="activity-panel" id="tab-auth">
+                    <div class="section-label">Authentication</div>
+                    <div id="auth-content">
+                        <div class="empty-state"><span class="empty-state-text">Awaiting scan data</span></div>
+                    </div>
+                </div>
+
+                <!-- AuthZ -->
+                <div class="activity-panel" id="tab-authz">
+                    <div class="section-label">Authorization Analysis</div>
+                    <div id="authz-content">
+                        <div class="empty-state"><span class="empty-state-text">Awaiting scan data</span></div>
+                    </div>
+                </div>
+
+                <!-- Reasoning -->
+                <div class="activity-panel" id="tab-reasoning">
+                    <div class="section-label">Autonomous Reasoning</div>
+                    <div class="reasoning-panel" id="reasoning-content">
+                        <div class="empty-state"><span class="empty-state-text">Awaiting scan data</span></div>
+                    </div>
+                </div>
+
+                <!-- Static -->
+                <div class="activity-panel" id="tab-static">
+                    <div class="section-label">Static Analysis</div>
+                    <div id="static-content">
+                        <div class="empty-state"><span class="empty-state-text">Awaiting scan data</span></div>
+                    </div>
+                </div>
+
+                <!-- AI Analyst -->
+                <div class="activity-panel" id="tab-ai-analyst">
+                    <div class="section-label">AI Security Analyst</div>
+                    <div id="ai-analyst-content">
+                        <div class="empty-state"><span class="empty-state-text">Awaiting scan data</span></div>
+                    </div>
+                </div>
+
+                <!-- Correlation -->
+                <div class="activity-panel" id="tab-correlation">
+                    <div class="section-label">Evidence Correlation</div>
+                    <div id="correlation-content">
+                        <div class="empty-state"><span class="empty-state-text">Awaiting scan data</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: HISTORY                               -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-history" class="view app-view">
+                <div class="section-label animate-in">Archive</div>
+                <div class="section-title animate-in animate-in-delay-1">SCAN HISTORY</div>
+                <div class="history-list" id="history-list">
+                    <div class="empty-state"><span class="empty-state-text">No scan history yet</span></div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- VIEW: REPORTS                               -->
+            <!-- ═══════════════════════════════════════════ -->
+            <section id="view-reports" class="view app-view">
+                <div class="section-label animate-in">Sentinel</div>
+                <div class="section-title animate-in animate-in-delay-1">SECURITY<br>ASSESSMENT</div>
+                <div class="report-preview animate-in animate-in-delay-2" id="report-content">
+                    <div class="empty-state"><span class="empty-state-text">Run a scan to generate a report</span></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Activity Tab Styles (inline to keep CSS clean) -->
+    <style>
+        .activity-tab {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--muted);
+            padding: calc(7 * var(--s)) calc(16 * var(--s));
+            border-radius: calc(50 * var(--s));
+            font-size: calc(11 * var(--s));
+            font-weight: 500;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: color 0.25s, background 0.25s, border-color 0.25s;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .activity-tab:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+        .activity-tab.active { color: #fff; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+        .activity-panel { display: none; }
+        .activity-panel.active { display: block; animation: fadeSlideIn 0.4s ease both; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="main.js"></script>
+
+    <!-- Supabase Authentication modal -->
+    <div class="modal-backdrop" id="auth-modal" aria-hidden="true">
+        <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+            <button class="modal-close" onclick="closeAuthModal()" aria-label="Close">×</button>
+            <div class="auth-kicker">SENTINEL ACCESS</div>
+            <h2 id="auth-title">Welcome back.</h2>
+            <p class="auth-copy" id="auth-copy">Sign in to access your security workspace.</p>
+            <form id="auth-form" onsubmit="submitAuth(event)">
+                <label>Email<input id="auth-email" type="email" required autocomplete="email" placeholder="you@company.com"></label>
+                <div id="signup-details-wrap" class="signup-details-wrap hidden">
+                    <label>Full name<input id="auth-full-name" type="text" required autocomplete="name" placeholder="Your name"></label>
+                    <label>Organization<input id="auth-organization" type="text" autocomplete="organization" placeholder="Company / college / organization"></label>
+                    <label>Role<input id="auth-role" type="text" autocomplete="organization-title" placeholder="Student / Developer / Security Engineer"></label>
+                </div>
+                <label>Password<input id="auth-password" type="password" required minlength="6" autocomplete="new-password" placeholder="••••••••"></label>
+                <div id="auth-confirm-wrap" class="auth-confirm-wrap hidden"><label>Confirm password<input id="auth-confirm" type="password" minlength="6" autocomplete="new-password" placeholder="••••••••"></label></div>
+                <div class="auth-error" id="auth-error"></div>
+                <button class="auth-submit" id="auth-submit" type="submit">Sign In</button>
+            </form>
+            <button class="auth-switch" id="auth-switch" onclick="toggleAuthMode()">Don't have an account? <strong>Create one</strong></button>
+            <div class="auth-demo-note">Secured by Supabase Auth.</div>
+        </div>
+    </div>
+
+    <!-- User Profile -->
+    <div class="modal-backdrop" id="profile-modal" aria-hidden="true">
+        <div class="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+            <button class="modal-close" onclick="closeProfileModal()" aria-label="Close">×</button>
+            <div class="profile-avatar" id="profile-avatar">S</div>
+            <div class="auth-kicker">SENTINEL PROFILE</div>
+            <h2 id="profile-title">Your profile.</h2>
+            <p class="auth-copy">Your workspace details are stored securely with your Supabase account.</p>
+            <div class="profile-details">
+                <div class="profile-detail"><span>Full name</span><strong id="profile-name">—</strong></div>
+                <div class="profile-detail"><span>Email</span><strong id="profile-email">—</strong></div>
+                <div class="profile-detail"><span>Organization</span><strong id="profile-organization">—</strong></div>
+                <div class="profile-detail"><span>Role</span><strong id="profile-role">—</strong></div>
+            </div>
+            <button class="profile-signout" onclick="signOutFromProfile()">Sign out</button>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="legal-modal" aria-hidden="true">
+        <div class="legal-modal" role="dialog" aria-modal="true">
+            <button class="modal-close" onclick="closeLegal()" aria-label="Close">×</button>
+            <div class="auth-kicker">SENTINEL LEGAL</div>
+            <h2 id="legal-title">Privacy Policy</h2>
+            <div class="legal-body" id="legal-body"></div>
+        </div>
+    </div>
+
+</body>
+</html>
