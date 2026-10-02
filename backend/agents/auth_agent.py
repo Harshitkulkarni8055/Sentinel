@@ -1,35 +1,43 @@
-import os
-import httpx
-from urllib.parse import urljoin
+from tools.sessions import credentials_from_env, find_login_spec, probe_login_candidates, open_sessions
+
 
 def auth_agent(state):
     print("\n=== AUTHENTICATION ENGINE ===")
     base = state["target"].rstrip("/")
-    user = os.getenv("SENTINEL_AUTH_USER","alice")
-    password = os.getenv("SENTINEL_AUTH_PASS","alice123")
-    candidates = ["/login","/signin","/auth","/token","/oauth","/session"]
-    found = []
-    authenticated = False
-    cookies = {}
-    with httpx.Client(timeout=2.0, follow_redirects=True) as c:
-        for path in candidates:
-            try:
-                r = c.get(base + path)
-                if r.status_code not in (404,405):
-                    found.append(path)
-            except Exception:
-                pass
-        if "/login" in found or (state["target"].rstrip("/").endswith(":9000")):
-            if "/login" not in found:
-                found.append("/login")
-            try:
-                r = c.post(base+"/login", data={"username":user,"password":password})
-                authenticated = r.status_code in (200,302,303) and bool(c.cookies)
-                cookies = dict(c.cookies)
-            except Exception:
-                pass
-    result={"auth_endpoints":found,"endpoints_found":found,"authenticated":authenticated,"authenticated_session":authenticated,"cookies":cookies}
-    state["observations"].append({"type":"auth","result":result})
-    print(f"Auth endpoints: {len(found)}")
-    print(f"Authenticated session: {authenticated}")
+
+    recon = next((o.get("result", {}) for o in state["observations"] if o.get("type") == "web_recon"), {})
+    endpoints = recon.get("endpoints", [])
+
+    credentials = state.get("credentials") or credentials_from_env()
+    spec = find_login_spec(endpoints)
+    candidates = probe_login_candidates(base) if not spec else [spec["path"]]
+
+    sessions = {}
+    if spec and credentials:
+        sessions = open_sessions(base, spec, credentials)
+
+    identities = {
+        label: {"role": cred.get("role", "user"), "user_id": info.get("user_id")}
+        for label, (_client, info, cred) in sessions.items()
+    }
+
+    result = {
+        "login_endpoint": spec["path"] if spec else None,
+        "auth_endpoints": candidates,
+        "endpoints_found": candidates,
+        "authenticated": bool(sessions),
+        "authenticated_session": bool(sessions),
+        "identities": identities,
+    }
+    state["observations"].append({"type": "auth", "result": result})
+
+    # Hand live sessions to later steps (authorization_tester, verifier) via auth_context.
+    # Not serialized into the API response; findings only ever carry the result dict above.
+    state["auth_context"] = {"base": base, "spec": spec, "sessions": sessions}
+
+    print(f"Auth endpoints: {len(candidates)}")
+    print(f"Authenticated identities: {list(identities.keys())}")
+
+    # Sessions stay open in auth_context for authorization_tester to reuse;
+    # it is responsible for closing them when done.
     return state

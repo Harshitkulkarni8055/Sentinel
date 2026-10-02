@@ -12,7 +12,10 @@ def _collect(observations):
         r=o.get("result",{})
         if isinstance(r,dict):
             for f in r.get("potential_findings",[]) or []:
-                if isinstance(f,dict): out.append(dict(f))
+                if isinstance(f,dict):
+                    f=dict(f)
+                    f["provenance"]="deterministic"
+                    out.append(f)
     return out
 
 def _dedupe(findings):
@@ -57,7 +60,10 @@ def ai_security_agent(state: SecurityState):
         if start!=-1 and end>start:
             data=json.loads(text[start:end+1])
             if isinstance(data,dict) and isinstance(data.get("findings"),list):
-                ai_findings=data["findings"]
+                for f in data["findings"]:
+                    if isinstance(f,dict):
+                        f["provenance"]="llm"
+                ai_findings=[f for f in data["findings"] if isinstance(f,dict)]
     except Exception as e:
         print(f"[AI] Provider unavailable; deterministic evidence retained ({type(e).__name__}).")
     merged=_dedupe(deterministic+ai_findings)

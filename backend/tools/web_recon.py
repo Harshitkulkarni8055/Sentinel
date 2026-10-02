@@ -6,6 +6,54 @@ from bs4 import BeautifulSoup
 TIMEOUT = 3.0
 MAX_PAGES = 30
 
+# Common API/auth paths that are rarely linked from HTML, so a plain crawl misses them.
+# This is a generic discovery technique (used by every real DAST tool), not app-specific.
+COMMON_PATHS = [
+    "/login", "/signin", "/auth/login", "/api/login", "/api/auth",
+    "/api/users", "/api/user", "/api/accounts", "/api/products", "/api/items",
+    "/api/admin", "/admin", "/api/me", "/api/profile", "/api/search",
+    "/health", "/api/health", "/api/status",
+]
+
+
+def _probe_common_paths(client, base, endpoints, seen):
+    for path in COMMON_PATHS:
+        try:
+            r = client.get(base + path)
+        except Exception:
+            continue
+        if r.status_code == 404:
+            continue
+        methods = ["GET"]
+        if r.status_code == 405:
+            # GET isn't allowed here; read the real methods off the Allow header
+            # instead of guessing (common for POST-only login endpoints).
+            allow = r.headers.get("allow", "")
+            methods = [m.strip().upper() for m in allow.split(",") if m.strip()] or ["POST"]
+        params = ["q"] if path == "/api/search" else []
+        if "POST" in methods and path.endswith(("login", "signin")):
+            params = params + ["username", "password"]
+        _add_endpoint(endpoints, seen, path, methods, params)
+
+
+def _probe_object_ids(client, base, endpoints, seen):
+    """REST ID-guessing: for a discovered collection-style path (e.g. /api/users) with
+    no ID segment yet, try appending a small id and see if the app resolves a single
+    object. This is how authorization_tester finds endpoints worth IDOR-testing without
+    hardcoding any path."""
+    collection_like = [e for e in list(endpoints) if not re.search(r"\{.*\}|/\d+$", e["path"])
+                        and e["path"].count("/") <= 2 and "GET" in e["methods"]]
+    for ep in collection_like[:10]:
+        path = ep["path"].rstrip("/")
+        try:
+            r = client.get(f"{base}{path}/1")
+        except Exception:
+            continue
+        if r.status_code == 200:
+            template = f"{path}/{{id}}"
+            _add_endpoint(endpoints, seen, template, ["GET"], ["id"])
+
+
 def _headers(resp):
     h = {k.lower(): v for k, v in resp.headers.items()}
     return {
@@ -100,21 +148,9 @@ def web_recon(target: str):
             else:
                 _add_endpoint(endpoints, seen, path, ["GET"], [])
 
-    # If the target is the demo app, make sure discovered routes are represented
-    # even when its root HTML has a form but no crawlable links.
-    known = {"/", "/login", "/api/users", "/api/users/{user_id}", "/api/search", "/api/admin", "/api/products"}
-    if parsed.port == 9000 or target.endswith(":9000"):
-        for p in known:
-            if p == "/login":
-                _add_endpoint(endpoints, seen, p, ["POST"], ["username","password"])
-            elif p == "/api/users/{user_id}":
-                _add_endpoint(endpoints, seen, p, ["GET"], ["user_id","session"])
-            elif p == "/api/search":
-                _add_endpoint(endpoints, seen, p, ["GET"], ["q"])
-            elif p == "/api/admin":
-                _add_endpoint(endpoints, seen, p, ["GET"], ["session"])
-            else:
-                _add_endpoint(endpoints, seen, p, ["GET"], [])
+    with httpx.Client(timeout=TIMEOUT, follow_redirects=True) as client:
+        _probe_common_paths(client, base, endpoints, seen)
+        _probe_object_ids(client, base, endpoints, seen)
 
     return {
         "target": target,

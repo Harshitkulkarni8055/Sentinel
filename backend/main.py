@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from orchestration.graph import graph
+from orchestration.state import new_state
 import json
 import re
 import uuid
@@ -30,8 +31,15 @@ def users():
 def products():
     return {"products": [{"id": 1, "name": "Laptop"}, {"id": 2, "name": "Phone"}]}
 
+class Credential(BaseModel):
+    label: str = Field(..., min_length=1, max_length=40)
+    username: str = Field(..., min_length=1, max_length=200)
+    password: str = Field(..., min_length=1, max_length=200)
+    role: str = Field(default="user", max_length=40)
+
 class ScanRequest(BaseModel):
     target: str = Field(..., min_length=1, max_length=2048)
+    credentials: list[Credential] = Field(default_factory=list, max_length=3)
 
 def validate_target(target: str) -> str:
     target = target.strip()
@@ -149,20 +157,9 @@ def _extract_attack_surface(observations):
 @app.post("/scan")
 def scan(request: ScanRequest):
     target = validate_target(request.target)
+    credentials = [c.model_dump() for c in request.credentials]
 
-    initial_state = {
-        "target": target,
-        "status": "starting",
-        "iteration": 0,
-        "observations": [],
-        "hypotheses": [],
-        "findings": [],
-        "messages": [],
-        "security_tested": False,
-        "next_actions": [],
-        "attack_paths": [],
-        "reasoning_iterations": 0,
-    }
+    initial_state = new_state(target, credentials=credentials)
 
     result = graph.invoke(initial_state)
     raw_findings = result.get("findings", [])
@@ -202,4 +199,5 @@ def scan(request: ScanRequest):
         },
         "findings": findings,
         "observations": result.get("observations", []),
+        "planner_trace": result.get("trace", []),
     }

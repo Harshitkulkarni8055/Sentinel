@@ -382,11 +382,17 @@ async function startScan() {
 
     const scanStartTime = Date.now();
 
+    const authUsername = document.getElementById('auth-username')?.value.trim();
+    const authPassword = document.getElementById('scan-auth-password')?.value;
+    const credentials = (authUsername && authPassword)
+        ? [{ label: 'A', username: authUsername, password: authPassword, role: 'user' }]
+        : [];
+
     try {
         const response = await fetch(`${API_BASE}/scan`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ target })
+            body: JSON.stringify({ target, credentials })
         });
 
         const responseText = await response.text();
