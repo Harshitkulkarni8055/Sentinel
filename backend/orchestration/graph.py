@@ -3,8 +3,10 @@ from orchestration.state import SecurityState
 from agents.coordinator import coordinator
 from agents.security_tester import security_tester
 from agents.adaptive_dast import adaptive_dast
+from agents.deep_scanner import deep_scanner
 from agents.auth_agent import auth_agent
 from agents.authorization_tester import authorization_tester
+from agents.jwt_tester import jwt_tester
 from agents.autonomous_reasoning import autonomous_reasoning
 from agents.code_agent import code_agent
 from agents.ai_security_agent import ai_security_agent
@@ -17,8 +19,10 @@ builder.add_node("recon", coordinator)
 builder.add_node("planner", planner)
 builder.add_node("security_test", mark_done("security_test")(security_tester))
 builder.add_node("adaptive_dast", mark_done("adaptive_dast")(adaptive_dast))
+builder.add_node("deep_scan", mark_done("deep_scan")(deep_scanner))
 builder.add_node("auth", mark_done("auth")(auth_agent))
 builder.add_node("authorization", mark_done("authorization")(authorization_tester))
+builder.add_node("jwt_check", mark_done("jwt_check")(jwt_tester))
 builder.add_node("reasoning", autonomous_reasoning)
 builder.add_node("code_scan", code_agent)
 builder.add_node("ai_security", ai_security_agent)
@@ -33,14 +37,18 @@ builder.add_edge("recon", "planner")
 builder.add_conditional_edges("planner", route, {
     "security_test": "security_test",
     "adaptive_dast": "adaptive_dast",
+    "deep_scan": "deep_scan",
     "auth": "auth",
     "authorization": "authorization",
+    "jwt_check": "jwt_check",
     "finish": "reasoning",
 })
 builder.add_edge("security_test", "planner")
 builder.add_edge("adaptive_dast", "planner")
+builder.add_edge("deep_scan", "planner")
 builder.add_edge("auth", "planner")
 builder.add_edge("authorization", "planner")
+builder.add_edge("jwt_check", "planner")
 
 builder.add_edge("reasoning", "code_scan")
 builder.add_edge("code_scan", "ai_security")

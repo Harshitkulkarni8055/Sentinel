@@ -13,11 +13,14 @@ STEP_BUDGET = 8
 TOOL_MENU = {
     "security_test": ("probe discovered endpoints for missing security headers and reflected input", None),
     "adaptive_dast": ("prioritize parameterized endpoints and re-probe them", "security_test"),
+    "deep_scan": ("probe for SQL injection, insecure cookies, open redirect, CORS "
+                  "misconfiguration, exposed sensitive files, and login rate limiting", None),
     "auth": ("attempt to log in with the provided test credentials", None),
     "authorization": ("test IDOR and privilege escalation using authenticated sessions", "auth"),
+    "jwt_check": ("inspect any issued JWT for the alg:none weakness", "auth"),
 }
 
-DEFAULT_ORDER = ["security_test", "adaptive_dast", "auth", "authorization"]
+DEFAULT_ORDER = ["security_test", "adaptive_dast", "deep_scan", "auth", "authorization", "jwt_check"]
 
 
 def _available(state):
