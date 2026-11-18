@@ -73,7 +73,7 @@ Frontend
 HTML
 CSS
 JavaScript
-Supabase Authentication
+Supabase for Authentication
 
 Project Structure
 ```text 
@@ -103,34 +103,40 @@ Sentinel/
 ```
 Running Locally
 
-Backend
+*Backend*
 
 cd /d D:\sentinel\backend
-venv311\Scripts\activate
+
+venv311\Scripts\activate 
+
 uvicorn main:app --reload --port 8000
 
-Frontend
+*Frontend*
 
 cd /d D:\sentinel\frontend
+
 python -m http.server 5500
 
 Open:
 
 http://127.0.0.1:5500
-Demo Target
+
+Demo Target 
+
 cd /d D:\sentinel\backend
+
 venv311\Scripts\activate
+
 python demo_target.py
 
 The vulnerable demo target runs on:
 
 http://127.0.0.1:9000
+
 Environment Variables
 
 Create a .env file inside backend/.
-
 Never commit real API keys or secrets.
-
 Example:
 
 FEATHERLESS_API_KEY=
@@ -138,7 +144,8 @@ FEATHERLESS_MODEL=Qwen/Qwen3.5-9B
 
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
-Security
+
+*Security*
 
 Sentinel is designed for authorized security testing only.
 
@@ -151,6 +158,5 @@ Project Status
 Sentinel is actively being developed toward autonomous, evidence-driven application security testing and continuous security validation.
 
 License
-
 This project is currently intended as a hackathon prototype.
 
